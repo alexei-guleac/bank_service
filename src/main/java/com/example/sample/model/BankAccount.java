@@ -22,11 +22,16 @@ import java.util.Date;
 @AllArgsConstructor
 @DynamicUpdate
 @ApiModel(description = "Bank account model")
+@NamedStoredProcedureQueries({
+        @NamedStoredProcedureQuery(name = "getBankAccountsByUserId",
+                procedureName = "[dbo].[getBankAccountsByUserId]",
+                parameters = {@StoredProcedureParameter(mode = ParameterMode.IN, type = Long.class, name = "UserId")})
+})
 public class BankAccount {
 
     @Id
     @Column(name = "id")
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
     @Column(name = "user_id")
