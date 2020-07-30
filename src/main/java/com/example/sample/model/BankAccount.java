@@ -41,6 +41,10 @@ public class BankAccount {
     @ApiModelProperty(notes = "Bank account currency")
     private Currency currency;
 
+    @Column(name = "balance")
+    @ApiModelProperty(notes = "Bank account balance")
+    private Double balance;
+
     @Column(name = "last_withdrawal")
     @ApiModelProperty(notes = "Bank account last withdrawal time")
     private Date lastWithdrawal;
