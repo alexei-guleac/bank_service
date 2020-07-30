@@ -1,11 +1,11 @@
 package com.example.sample.repository;
 
 import com.example.sample.model.BankAccount;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import javax.persistence.EntityManager;
+import javax.persistence.ParameterMode;
+import javax.persistence.StoredProcedureQuery;
 import java.util.List;
 
 
@@ -13,16 +13,31 @@ import java.util.List;
  * Bank account repository
  */
 @Repository
-public interface BankAccountRepository extends JpaRepository<BankAccount, String> {
+public class BankAccountRepository {
 
-    // не работает
-    // @Query(value = "EXEC [dbo].[getBankAccountsByUserId] [UserId];", nativeQuery = true)
-    // @Query(value = "EXEC [dbo].[getBankAccountsByUserId] :UserId];", nativeQuery = true)
-    // @Query(value = "EXEC [dbo].[getBankAccountsByUserId] [:UserId];", nativeQuery = true)
-    // @Query(value = "EXEC [dbo].[getBankAccountsByUserId] @UserId = :UserId;", nativeQuery = true)
-    // @Procedure(procedureName = "BankAccount.getBankAccountsByUserId")
+    private final EntityManager em;
 
-    // хардкод работает
-    @Query(value = "EXEC [dbo].[getBankAccountsByUserId] 12345;", nativeQuery = true)
-    List<BankAccount> findByUserId(@Param("UserId") Long id);
+    public BankAccountRepository(EntityManager em) {
+        this.em = em;
+    }
+
+    /**
+     * Get all bank accounts from database by user id by stored procedure call
+     *
+     * @param userId - target user id
+     * @return - bank accounts list
+     */
+    public List<BankAccount> findByUserId(Long userId) {
+        StoredProcedureQuery sp = em.createStoredProcedureQuery("getBankAccountsByUserId", BankAccount.class);
+        sp.registerStoredProcedureParameter("UserId", Long.class, ParameterMode.IN);
+        sp.setParameter("UserId", userId);
+
+        boolean result = sp.execute();
+        if (result) {
+            return sp.getResultList();
+        } else {
+            // Handle the false for no result set returned, e.g.
+            throw new RuntimeException("No result set(s) returned from the stored procedure");
+        }
+    }
 }
